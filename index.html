@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snoopy Cycle 🐶</title>
+    <title>Snoopy Cycle 🐾</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap 5 CSS CDN -->
@@ -17,7 +17,7 @@
     <div class="container py-4 main-app-wrapper">
         <div class="app-container mx-auto">
 
-            <!-- BARRA DE NAVEGACIÓN (Arriba en PC, Abajo fija en Celular) -->
+            <!-- BARRA DE NAVEGACIÓN ADAPTATIVA (Arriba en PC, Abajo fija en Celular) -->
             <nav class="app-nav-bar shadow-sm p-2 rounded-pill mx-auto mb-4 d-flex align-items-center justify-content-between">
                 <div class="d-flex gap-1 flex-grow-1">
                     <button class="nav-item-btn active border-0 bg-transparent px-3 py-2 rounded-pill fw-bold" data-target="homeView">
@@ -26,6 +26,9 @@
                     <button class="nav-item-btn border-0 bg-transparent px-3 py-2 rounded-pill fw-bold" data-target="calendarView">
                         📅 Calendario
                     </button>
+                    <button class="nav-item-btn border-0 bg-transparent px-3 py-2 rounded-pill fw-bold" data-target="profileView">
+                        ⚙️ Mis Datos
+                    </button>
                 </div>
                 <!-- Botón de Modo Oscuro / Claro -->
                 <button id="themeToggleBtn" class="theme-toggle-btn border-0 bg-transparent px-3 py-2 rounded-pill fw-bold" title="Cambiar modo claro/oscuro">
@@ -33,7 +36,7 @@
                 </button>
             </nav>
 
-            <!-- VISTA PRINCIPAL (INICIO) -->
+            <!-- VISTA 1: INICIO -->
             <div id="homeView" class="view active-view">
                 
                 <!-- Header -->
@@ -42,10 +45,10 @@
                     <button class="btn btn-warning btn-sm fw-bold px-4 shadow-sm rounded-pill" id="goToTodayBtn">Hoy</button>
                 </div>
 
-                <!-- EN PC SE ORGANIZA EN DOS COLUMNAS, EN MÓVIL EN UNA SOLA -->
+                <!-- DISEÑO DE DOS COLUMNAS EN PC, UNA EN MÓVIL -->
                 <div class="row g-4">
                     
-                    <!-- Columna Izquierda: Resumen y Ciclo -->
+                    <!-- Columna Izquierda: Círculo y Botón Rápido -->
                     <div class="col-12 col-lg-6">
                         <!-- Tarjeta del Ciclo Actual -->
                         <div class="card cycle-hero-card shadow-sm border-0 mb-4 text-center p-4">
@@ -64,7 +67,7 @@
                         </button>
                     </div>
 
-                    <!-- Columna Derecha: Barra Semanal, Configuración y Consejos -->
+                    <!-- Columna Derecha: Barra Semanal, Información y Guía -->
                     <div class="col-12 col-lg-6">
                         <!-- BARRA SEMANAL DINÁMICA -->
                         <div class="card weekly-bar-card shadow-sm border-0 mb-4 p-3">
@@ -74,49 +77,29 @@
                             </div>
                         </div>
 
-                        <!-- Configuración del Ciclo -->
-                        <div class="card config-card shadow-sm border-0 mb-4 p-4">
-                            <h3 class="fs-6 fw-bold mb-3">Configuración del Ciclo</h3>
-                            <div class="row g-3 mb-3">
-                                <div class="col-7">
-                                    <label for="startDate" class="form-label small fw-semibold text-muted">Última regla</label>
-                                    <input type="date" id="startDate" class="form-control">
-                                </div>
-                                <div class="col-5">
-                                    <label for="cycleLength" class="form-label small fw-semibold text-muted">Días ciclo</label>
-                                    <input type="number" id="cycleLength" value="28" min="20" max="45" class="form-control">
-                                </div>
-                            </div>
-                            <button id="calculateBtn" class="btn btn-warning w-100 fw-bold shadow-sm">Guardar y Calcular</button>
-                        </div>
-
                         <!-- Detalles y Consejos de Snoopy -->
-                        <div class="card info-card shadow-sm border-0 mb-4 p-4" id="detailsSection" style="display: none;">
-                            <h3 class="fs-6 fw-bold mb-2">Información del Ciclo</h3>
+                        <div class="card info-card shadow-sm border-0 mb-4 p-4" id="detailsSection">
+                            <h3 class="fs-6 fw-bold mb-2">Información de tu Ciclo</h3>
                             <div class="d-flex justify-content-between small text-muted mb-2">
                                 <span>Próximo periodo:</span>
                                 <strong id="nextPeriod" class="text-dark">-</strong>
                             </div>
                             <div class="d-flex justify-content-between small text-muted mb-3">
-                                <span>Ventana fértil:</span>
+                                <span>Ventana / Ovulación:</span>
                                 <strong id="fertileWindow" class="text-dark">-</strong>
                             </div>
                             <div class="snoopy-tip p-3 rounded-3" id="snoopyTip">
-                                🐶 *Snoopy dice:* Configura tus datos para recibir consejitos especiales.
+                                🐶 *Snoopy dice:* Actualiza tus datos en "Mis Datos" para personalizar tus consejitos.
                             </div>
                         </div>
 
-                        <!-- Guía rápida / Trivias -->
+                        <!-- Guía rápida -->
                         <div class="card trivia-card shadow-sm border-0 mb-4 p-4">
                             <h3 class="fs-6 fw-bold mb-2">Guía de Snoopy 🐾</h3>
                             <div class="accordion accordion-flush" id="snoopyAccordion">
                                 <details class="faq-item p-2 mb-2 rounded border">
-                                    <summary class="fw-semibold small">¿Qué pasa en la Fase Menstrual?</summary>
-                                    <p class="small text-muted mt-2 mb-0">Es el inicio de tu ciclo. Snoopy recomienda descanso, una mantita abrigada y chocolates para consentirte.</p>
-                                </details>
-                                <details class="faq-item p-2 rounded border">
-                                    <summary class="fw-semibold small">¿Cómo funciona la ventana fértil?</summary>
-                                    <p class="small text-muted mt-2 mb-0">Son los días aproximados de mayor energía y vitalidad según tu ovulación. ¡Ideal para pasear con Woodstock!</p>
+                                    <summary class="fw-semibold small">¿Cómo influyen tus respuestas?</summary>
+                                    <p class="small text-muted mt-2 mb-0">El sistema adapta automáticamente el cálculo de ovulación según el método anticonceptivo que elijas en "Mis Datos".</p>
                                 </details>
                             </div>
                         </div>
@@ -125,7 +108,7 @@
                 </div>
             </div>
 
-            <!-- VISTA CALENDARIO -->
+            <!-- VISTA 2: CALENDARIO -->
             <div id="calendarView" class="view">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <span class="app-title fs-3 fw-bold text-danger">Calendario de Ciclo 📅</span>
@@ -155,6 +138,7 @@
 
                         <div class="calendar-legend d-flex justify-content-around small text-muted p-3 rounded shadow-sm border mb-4">
                             <div class="legend-item d-flex align-items-center gap-2"><span class="dot period-dot"></span> Periodo</div>
+                            <div class="legend-item d-flex align-items-center gap-2">🥚 Ovulación</div>
                             <div class="legend-item d-flex align-items-center gap-2">💊 Método</div>
                             <div class="legend-item d-flex align-items-center gap-2">✨ Síntoma</div>
                         </div>
@@ -162,14 +146,67 @@
                 </div>
             </div>
 
+            <!-- VISTA 3: FORMULARIO DE PREGUNTAS / PERFIL Y CONFIGURACIÓN -->
+            <div id="profileView" class="view">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-8">
+                        <div class="card p-4 shadow-sm mb-4">
+                            <h3 class="fs-4 fw-bold mb-2">🐾 Configuración y Preguntas de tu Ciclo</h3>
+                            <p class="text-muted small mb-4">Tus respuestas organizan el contenido de la aplicación, calculan tus fases y determinan la visualización de la ovulación.</p>
+                            
+                            <form id="profileForm">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">1. ¿Cómo te llamas o apodo?</label>
+                                    <input type="text" id="profileName" class="form-control" required placeholder="Tu nombre">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">2. Fecha de inicio de tu última regla:</label>
+                                    <input type="date" id="profileStartDate" class="form-control" required>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-semibold">3. Duración promedio del ciclo (días):</label>
+                                        <input type="number" id="profileCycleLen" class="form-control" min="20" max="45" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-semibold">4. Duración de la regla (días):</label>
+                                        <input type="number" id="profilePeriodLen" class="form-control" min="2" max="10" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">5. Abundancia habitual de tu flujo:</label>
+                                    <select id="profileFlow" class="form-select">
+                                        <option value="ligero">Ligero</option>
+                                        <option value="moderado">Moderado</option>
+                                        <option value="abundante">Abundante</option>
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">6. ¿Utilizas algún método anticonceptivo?</label>
+                                    <select id="profileContraceptive" class="form-select">
+                                        <option value="ninguno">Ninguno / DIU de cobre (Ciclo Natural)</option>
+                                        <option value="pastillas">Pastillas anticonceptivas</option>
+                                        <option value="inyeccion">Inyección anticonceptiva</option>
+                                        <option value="implante">Implante / DIU hormonal</option>
+                                    </select>
+                                    <div class="form-text text-muted small mt-1">
+                                        *Nota informativa: Si seleccionas métodos hormonales (pastillas, inyección, implante), el sistema inhabilita el cálculo biológico de ovulación en tu calendario.
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-warning w-100 fw-bold py-2 shadow-sm">Guardar y actualizar contenido 🐶</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- MODAL EMERGENTE CON GRILLAS DE ICONOS -->
+        <!-- MODAL DE REGISTRO DIARIO -->
         <div class="modal-overlay" id="dayModal" style="display: none;">
             <div class="modal-card shadow-lg p-4 rounded-4">
                 <h3 id="modalDateTitle" class="fs-5 fw-bold text-center mb-3">Registro del Día</h3>
                 
-                <!-- Sección Método Anticonceptivo en Grilla -->
                 <div class="modal-section-title small fw-bold text-muted mb-2">Método Anticonceptivo</div>
                 <div class="icon-grid mb-3" id="methodGrid">
                     <button type="button" class="icon-option-btn" data-type="method" data-value="pill">
@@ -186,7 +223,6 @@
                     </button>
                 </div>
 
-                <!-- Sección Síntomas y Ánimo en Grilla -->
                 <div class="modal-section-title small fw-bold text-muted mb-2">Síntomas / Ánimo</div>
                 <div class="icon-grid mb-3" id="symptomGrid">
                     <button type="button" class="icon-option-btn" data-type="symptom" data-value="cramps">

@@ -1,45 +1,248 @@
-let displayYear = new Date().getFullYear();
-let displayMonth = new Date().getMonth();
+// --- ESTADO GLOBAL UNIFICADO ---
+let cycleData = JSON.parse(localStorage.getItem('snoopy_cycle_data')) || {
+    isConfigured: false,
+    username: '',
+    startDate: '',
+    cycleLength: 28,
+    periodLength: 5,
+    flowIntensity: 'moderado',
+    contraceptiveType: 'ninguno',
+    ovulates: true,
+    logs: {}
+};
 
-// Recuperar registros y síntomas desde localStorage
-let pillRecords = JSON.parse(localStorage.getItem('snoopyPillRecords')) || {};
-let symptomRecords = JSON.parse(localStorage.getItem('snoopySymptomRecords')) || {};
-let selectedDateString = null;
+let currentDateCursor = new Date();
+let selectedDateStrForModal = '';
 
-// Estados temporales dentro del modal actual
-let currentSelectedMethod = null;
-let currentSelectedSymptom = null;
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
 
-// Cargar barra semanal al iniciar la app
-window.addEventListener('DOMContentLoaded', () => {
-    renderWeeklyBar();
-    initModalGridInteraction();
+    // Comprobar si es la primera vez que usa la app
+    if (!cycleData.isConfigured || !cycleData.startDate) {
+        showFirstTimeWelcomeModal();
+    } else {
+        loadProfileIntoForm();
+        calculateCycle();
+    }
+
+    setupNavigationAndEvents();
 });
 
-// Control de navegación entre pestañas
-const navButtons = document.querySelectorAll('.bottom-nav .nav-item');
-navButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        navButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+// --- PANTALLA / MODAL DE PREGUNTAS PARA LA PRIMERA VEZ ---
+function showFirstTimeWelcomeModal() {
+    const welcomeHTML = `
+        <div id="firstTimeOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; justify-content:center; align-items:center; padding: 1rem;">
+            <div class="card p-4 shadow-lg" style="width: 100%; max-width: 450px; background: var(--card-bg); color: var(--text-main); border-radius: 20px; max-height: 90vh; overflow-y: auto;">
+                <h3 class="text-center mb-2 fw-bold text-danger">🐾 ¡Bienvenida a Snoopy Cycle!</h3>
+                <p class="text-muted text-center small mb-4">Como es tu primera vez por aquí, respondamos unas breves preguntas para personalizar tus fases, tus consejos y tu calendario.</p>
+                
+                <form id="firstTimeForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">1. ¿Cómo te llamas o apodo?</label>
+                        <input type="text" id="ftName" class="form-control" required placeholder="Tu nombre">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">2. Fecha de inicio de tu última regla:</label>
+                        <input type="date" id="ftStartDate" class="form-control" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold small">3. Duración del ciclo (días):</label>
+                            <input type="number" id="ftCycleLen" class="form-control" value="28" min="20" max="45" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold small">4. Duración de la regla (días):</label>
+                            <input type="number" id="ftPeriodLen" class="form-control" value="5" min="2" max="10" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">5. Abundancia habitual de tu flujo:</label>
+                        <select id="ftFlow" class="form-select">
+                            <option value="ligero">Ligero</option>
+                            <option value="moderado" selected>Moderado</option>
+                            <option value="abundante">Abundante</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small">6. ¿Utilizas algún método anticonceptivo?</label>
+                        <select id="ftContraceptive" class="form-select">
+                            <option value="ninguno" selected>Ninguno / DIU de cobre (Ciclo Natural)</option>
+                            <option value="pastillas">Pastillas anticonceptivas</option>
+                            <option value="inyeccion">Inyección anticonceptiva</option>
+                            <option value="implante">Implante / DIU hormonal</option>
+                        </select>
+                        <div class="form-text text-muted small mt-1" style="font-size: 0.75rem;">
+                            *Si usas pastillas, inyección o implante, la app adaptará la predicción excluyendo la ovulación biológica.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100 fw-bold py-2 shadow-sm">¡Comenzar mi viaje con Snoopy! 🐶</button>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', welcomeHTML);
 
-        const targetId = btn.getAttribute('data-target');
-        document.querySelectorAll('.view').forEach(view => {
-            view.classList.remove('active-view');
-        });
-        document.getElementById(targetId).classList.add('active-view');
+    // Poner la fecha de hoy por defecto en el input de bienvenida
+    document.getElementById('ftStartDate').value = formatDateISO(new Date());
 
-        if (targetId === 'calendarView') {
-            initCalendarSelectors();
-            renderCalendar();
-        } else if (targetId === 'homeView') {
-            renderWeeklyBar();
-        }
+    document.getElementById('firstTimeForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        cycleData.isConfigured = true;
+        cycleData.username = document.getElementById('ftName').value.trim();
+        cycleData.startDate = document.getElementById('ftStartDate').value;
+        cycleData.cycleLength = parseInt(document.getElementById('ftCycleLen').value) || 28;
+        cycleData.periodLength = parseInt(document.getElementById('ftPeriodLen').value) || 5;
+        cycleData.flowIntensity = document.getElementById('ftFlow').value;
+        cycleData.contraceptiveType = document.getElementById('ftContraceptive').value;
+
+        // Determinar ovulación según método
+        cycleData.ovulates = !['pastillas', 'inyeccion', 'implante'].includes(cycleData.contraceptiveType);
+
+        saveData();
+        document.getElementById('firstTimeOverlay').remove();
+        loadProfileIntoForm();
+        calculateCycle();
+        
+        alert(`¡Todo listo, ${cycleData.username}! Ya puedes explorar tu app 🐾`);
     });
-});
+}
 
-// Renderizar la barra semanal dinámica en la vista principal
-function renderWeeklyBar() {
+// Cargar datos actuales en la pestaña de actualización (Mis Datos)
+function loadProfileIntoForm() {
+    if (!cycleData.startDate) return;
+    document.getElementById('profileName').value = cycleData.username || '';
+    document.getElementById('profileStartDate').value = cycleData.startDate;
+    document.getElementById('profileCycleLen').value = cycleData.cycleLength;
+    document.getElementById('profilePeriodLen').value = cycleData.periodLength;
+    document.getElementById('profileFlow').value = cycleData.flowIntensity || 'moderado';
+    document.getElementById('profileContraceptive').value = cycleData.contraceptiveType || 'ninguno';
+}
+
+function setupNavigationAndEvents() {
+    // Cambio de Vistas
+    const navButtons = document.querySelectorAll('.app-nav-bar .nav-item-btn[data-target]');
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            
+            navButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active-view'));
+            document.getElementById(targetId).classList.add('active-view');
+
+            if (targetId === 'calendarView') {
+                initCalendarSelects();
+                renderCalendar();
+            } else if (targetId === 'profileView') {
+                loadProfileIntoForm();
+            }
+        });
+    });
+
+    // Guardar actualización desde la pestaña "Mis Datos"
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            cycleData.username = document.getElementById('profileName').value.trim();
+            cycleData.startDate = document.getElementById('profileStartDate').value;
+            cycleData.cycleLength = parseInt(document.getElementById('profileCycleLen').value) || 28;
+            cycleData.periodLength = parseInt(document.getElementById('profilePeriodLen').value) || 5;
+            cycleData.flowIntensity = document.getElementById('profileFlow').value;
+            cycleData.contraceptiveType = document.getElementById('profileContraceptive').value;
+
+            cycleData.ovulates = !['pastillas', 'inyeccion', 'implante'].includes(cycleData.contraceptiveType);
+
+            saveData();
+            calculateCycle();
+            
+            alert('¡Tus datos se han actualizado con éxito! El contenido y el calendario se han recalculado 🐾');
+            document.querySelector('[data-target="homeView"]').click();
+        });
+    }
+
+    // Botones rápidos
+    document.getElementById('goToTodayBtn').addEventListener('click', () => {
+        currentDateCursor = new Date();
+        initCalendarSelects();
+        renderCalendar();
+    });
+
+    document.getElementById('openSymptomModalBtn').addEventListener('click', () => {
+        openDayModal(formatDateISO(new Date()));
+    });
+
+    // Controles de mes
+    document.getElementById('prevMonthBtn').addEventListener('click', () => { currentDateCursor.setMonth(currentDateCursor.getMonth() - 1); updateCalendarDropdowns(); renderCalendar(); });
+    document.getElementById('nextMonthBtn').addEventListener('click', () => { currentDateCursor.setMonth(currentDateCursor.getMonth() + 1); updateCalendarDropdowns(); renderCalendar(); });
+    document.getElementById('monthSelect').addEventListener('change', (e) => { currentDateCursor.setMonth(parseInt(e.target.value)); renderCalendar(); });
+    document.getElementById('yearSelect').addEventListener('change', (e) => { currentDateCursor.setFullYear(parseInt(e.target.value)); renderCalendar(); });
+
+    setupModalInteractions();
+}
+
+// --- CÁLCULO INTELIGENTE DEL CICLO ---
+function calculateCycle() {
+    if (!cycleData.startDate) return;
+
+    const start = new Date(cycleData.startDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const cycleLen = cycleData.cycleLength;
+    const periodLen = cycleData.periodLength;
+
+    const diffTime = today - start;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    let currentDayOfCycle = (diffDays % cycleLen) + 1;
+    if (currentDayOfCycle < 1) currentDayOfCycle = cycleLen + currentDayOfCycle;
+
+    let phaseName = 'Fase Folicular';
+    let greeting = cycleData.username ? `, ${cycleData.username}` : '';
+    let tip = `🐶 *Snoopy dice${greeting}:* Tienes buena energía, ¡ideal para pasear!`;
+
+    if (currentDayOfCycle <= periodLen) {
+        phaseName = 'Fase Menstrual 🩸';
+        tip = `🐶 *Snoopy dice${greeting}:* Descansa y abrígate. Tu flujo está registrado como *${cycleData.flowIntensity}*.`;
+    } else if (cycleData.ovulates && currentDayOfCycle >= (cycleLen - 16) && currentDayOfCycle <= (cycleLen - 12)) {
+        phaseName = 'Ventana Fértil & Ovulación ✨';
+        tip = `🐶 *Snoopy dice${greeting}:* ¡Días de máxima vitalidad y ovulación estimada!`;
+    } else if (!cycleData.ovulates && currentDayOfCycle >= (cycleLen - 16) && currentDayOfCycle <= (cycleLen - 12)) {
+        phaseName = 'Fase Media (Controlada) 💊';
+        tip = `🐶 *Snoopy dice${greeting}:* Tu método (${cycleData.contraceptiveType}) mantiene tu ciclo estable sin ovulación.`;
+    } else if (currentDayOfCycle > (cycleLen - 12)) {
+        phaseName = 'Fase Lútea 🌙';
+        tip = `🐶 *Snoopy dice${greeting}:* Ve bajando el ritmo con calma y paciencia.`;
+    }
+
+    document.getElementById('currentDayNumber').textContent = `Día ${currentDayOfCycle}`;
+    document.getElementById('currentPhaseLabel').textContent = phaseName;
+    document.getElementById('predictionText').textContent = `Ciclo de ${cycleLen} días • ${cycleData.contraceptiveType !== 'ninguno' ? 'Con anticonceptivo' : 'Natural'}`;
+
+    const nextPeriodDate = new Date(start);
+    const cyclesPassed = Math.floor(diffDays / cycleLen) + (diffDays >= 0 ? 1 : 0);
+    nextPeriodDate.setDate(start.getDate() + (cyclesPassed * cycleLen));
+
+    document.getElementById('nextPeriod').textContent = formatDateReadable(nextPeriodDate);
+    
+    const fertileEl = document.getElementById('fertileWindow');
+    if (cycleData.ovulates) {
+        const ovDate = new Date(nextPeriodDate);
+        ovDate.setDate(nextPeriodDate.getDate() - 14);
+        fertileEl.textContent = `Ovulación el ${formatDateReadable(ovDate)}`;
+    } else {
+        fertileEl.textContent = `No aplica (Método activo)`;
+    }
+
+    document.getElementById('snoopyTip').innerHTML = tip;
+    renderWeeklyBar(start, cycleLen);
+}
+
+// --- RENDERIZAR BARRA SEMANAL ---
+function renderWeeklyBar(startDate, cycleLength) {
     const container = document.getElementById('weekDaysContainer');
     if (!container) return;
     container.innerHTML = '';
@@ -47,415 +250,261 @@ function renderWeeklyBar() {
     const today = new Date();
     today.setHours(0,0,0,0);
 
-    const currentDayOfWeek = today.getDay();
-    const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
-    
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() + distanceToMonday);
+    for (let i = -3; i <= 3; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        const dateStr = formatDateISO(d);
 
-    const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+        const diff = Math.floor((d - startDate) / (1000 * 60 * 60 * 24));
+        let cDay = (diff % cycleLength) + 1;
+        if (cDay < 1) cDay = cycleLength + cDay;
 
-    for (let i = 0; i < 7; i++) {
-        const loopDate = new Date(startOfWeek);
-        loopDate.setDate(startOfWeek.getDate() + i);
+        const isToday = i === 0;
+        const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const dayName = dayNames[d.getDay()];
+
+        const item = document.createElement('div');
+        item.className = `week-day-item ${isToday ? 'today' : ''}`;
         
-        const year = loopDate.getFullYear();
-        const month = String(loopDate.getMonth() + 1).padStart(2, '0');
-        const dayNum = String(loopDate.getDate()).padStart(2, '0');
-        const dateString = `${year}-${month}-${dayNum}`;
-
-        const dayDiv = document.createElement('div');
-        dayDiv.classList.add('week-day-item');
-
-        if (loopDate.getTime() === today.getTime()) {
-            dayDiv.classList.add('today');
+        const log = cycleData.logs[dateStr];
+        let iconsHtml = '';
+        if (log) {
+            if (log.methods && log.methods.length > 0) iconsHtml += '💊';
+            if (log.symptoms && log.symptoms.length > 0) iconsHtml += '✨';
         }
 
-        dayDiv.addEventListener('click', () => {
-            openDayModal(dateString, loopDate.getDate(), loopDate.getMonth(), year);
-        });
+        item.innerHTML = `
+            <span class="week-day-name">${dayName}</span>
+            <span class="week-day-num">${d.getDate()}</span>
+            <span class="small text-muted" style="font-size:0.6rem;">D.${cDay}</span>
+            <div class="week-day-indicators">${iconsHtml}</div>
+        `;
 
-        const nameSpan = document.createElement('span');
-        nameSpan.classList.add('week-day-name');
-        nameSpan.innerText = dayNames[i];
-
-        const numSpan = document.createElement('span');
-        numSpan.classList.add('week-day-num');
-        numSpan.innerText = loopDate.getDate();
-
-        const indicatorsDiv = document.createElement('div');
-        indicatorsDiv.classList.add('week-day-indicators');
-
-        if (pillRecords[dateString]) {
-            const pSpan = document.createElement('span');
-            pSpan.innerText = '💊';
-            indicatorsDiv.appendChild(pSpan);
-        }
-        if (symptomRecords[dateString]) {
-            const sSpan = document.createElement('span');
-            sSpan.innerText = '✨';
-            indicatorsDiv.appendChild(sSpan);
-        }
-
-        dayDiv.appendChild(nameSpan);
-        dayDiv.appendChild(numSpan);
-        dayDiv.appendChild(indicatorsDiv);
-
-        container.appendChild(dayDiv);
+        item.addEventListener('click', () => openDayModal(dateStr));
+        container.appendChild(item);
     }
 }
 
-// Configurar clics en los botones de las grillas del modal
-function initModalGridInteraction() {
-    const gridButtons = document.querySelectorAll('.icon-option-btn');
-    gridButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const type = btn.getAttribute('data-type');
-            const value = btn.getAttribute('data-value');
-
-            if (type === 'method') {
-                // Si ya estaba seleccionado, se desmarca (permite alternar)
-                if (currentSelectedMethod === value) {
-                    currentSelectedMethod = null;
-                    btn.classList.remove('selected');
-                } else {
-                    // Desmarcar otros del mismo grupo
-                    document.querySelectorAll('[data-type="method"]').forEach(b => b.classList.remove('selected'));
-                    currentSelectedMethod = value;
-                    btn.classList.add('selected');
-                }
-            } else if (type === 'symptom') {
-                if (currentSelectedSymptom === value) {
-                    currentSelectedSymptom = null;
-                    btn.classList.remove('selected');
-                } else {
-                    document.querySelectorAll('[data-type="symptom"]').forEach(b => b.classList.remove('selected'));
-                    currentSelectedSymptom = value;
-                    btn.classList.add('selected');
-                }
-            }
-        });
-    });
-}
-
-// Abrir modal unificado y marcar botones activos según la fecha
-function openDayModal(dateString, dayNum, monthIdx, yearNum) {
-    selectedDateString = dateString;
-    const monthNamesFull = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-    
-    document.getElementById('modalDateTitle').innerText = `${dayNum} de ${monthNamesFull[monthIdx]} ${yearNum}`;
-
-    // Cargar valores guardados o limpiar
-    currentSelectedMethod = pillRecords[dateString] || null;
-    currentSelectedSymptom = symptomRecords[dateString] || null;
-
-    // Actualizar visualmente la selección en las grillas
-    document.querySelectorAll('[data-type="method"]').forEach(b => {
-        if (b.getAttribute('data-value') === currentSelectedMethod) {
-            b.classList.add('selected');
-        } else {
-            b.classList.remove('selected');
-        }
-    });
-
-    document.querySelectorAll('[data-type="symptom"]').forEach(b => {
-        if (b.getAttribute('data-value') === currentSelectedSymptom) {
-            b.classList.add('selected');
-        } else {
-            b.classList.remove('selected');
-        }
-    });
-
-    document.getElementById('dayModal').style.display = 'flex';
-}
-
-// Botón rápido de síntomas para HOY
-const quickSymptomBtn = document.getElementById('openSymptomModalBtn');
-if (quickSymptomBtn) {
-    quickSymptomBtn.addEventListener('click', () => {
-        const today = new Date();
-        const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        openDayModal(dateString, today.getDate(), today.getMonth(), today.getFullYear());
-    });
-}
-
-// Inicializar selectores de mes y año en el calendario
-function initCalendarSelectors() {
+// --- CALENDARIO MENSUAL CON OVULACIÓN CONDICIONAL ---
+function initCalendarSelects() {
     const monthSelect = document.getElementById('monthSelect');
     const yearSelect = document.getElementById('yearSelect');
+    if (!monthSelect || !yearSelect) return;
 
-    if (monthSelect.children.length > 0) return;
-
-    const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    
     monthSelect.innerHTML = '';
-    monthNames.forEach((m, index) => {
+    months.forEach((m, index) => {
         const opt = document.createElement('option');
         opt.value = index;
-        opt.innerText = m;
+        opt.textContent = m;
         monthSelect.appendChild(opt);
     });
 
-    const currentYear = new Date().getFullYear();
     yearSelect.innerHTML = '';
-    for (let y = currentYear - 3; y <= currentYear + 5; y++) {
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear - 2; y <= currentYear + 2; y++) {
         const opt = document.createElement('option');
         opt.value = y;
-        opt.innerText = y;
+        opt.textContent = y;
         yearSelect.appendChild(opt);
     }
 
-    monthSelect.value = displayMonth;
-    yearSelect.value = displayYear;
-
-    monthSelect.addEventListener('change', (e) => {
-        displayMonth = parseInt(e.target.value);
-        renderCalendar();
-    });
-
-    yearSelect.addEventListener('change', (e) => {
-        displayYear = parseInt(e.target.value);
-        renderCalendar();
-    });
+    updateCalendarDropdowns();
 }
 
-// Botones de navegación de mes
-document.getElementById('prevMonthBtn').addEventListener('click', () => {
-    displayMonth--;
-    if (displayMonth < 0) {
-        displayMonth = 11;
-        displayYear--;
-    }
-    updateSelectorsUI();
-    renderCalendar();
-});
-
-document.getElementById('nextMonthBtn').addEventListener('click', () => {
-    displayMonth++;
-    if (displayMonth > 11) {
-        displayMonth = 0;
-        displayYear++;
-    }
-    updateSelectorsUI();
-    renderCalendar();
-});
-
-document.getElementById('goToTodayBtn').addEventListener('click', () => {
-    const now = new Date();
-    displayYear = now.getFullYear();
-    displayMonth = now.getMonth();
-    updateSelectorsUI();
-    renderCalendar();
-});
-
-function updateSelectorsUI() {
+function updateCalendarDropdowns() {
     const mSel = document.getElementById('monthSelect');
     const ySel = document.getElementById('yearSelect');
-    if (mSel && ySel) {
-        mSel.value = displayMonth;
-        ySel.value = displayYear;
-    }
+    if (mSel) mSel.value = currentDateCursor.getMonth();
+    if (ySel) ySel.value = currentDateCursor.getFullYear();
 }
 
-// Cálculo del ciclo principal
-document.getElementById('calculateBtn').addEventListener('click', function() {
-    const startDateInput = document.getElementById('startDate').value;
-    const cycleLength = parseInt(document.getElementById('cycleLength').value);
-
-    if (!startDateInput) {
-        alert("Por favor selecciona una fecha de inicio.");
-        return;
-    }
-
-    const lastPeriodDate = new Date(startDateInput);
-    const today = new Date();
-
-    lastPeriodDate.setHours(0,0,0,0);
-    today.setHours(0,0,0,0);
-
-    const diffTime = today - lastPeriodDate;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) {
-        alert("La fecha seleccionada no puede ser en el futuro.");
-        return;
-    }
-
-    const currentCycleDay = (diffDays % cycleLength) + 1;
-    const cyclesPassed = Math.floor(diffDays / cycleLength);
-    const nextPeriodDate = new Date(lastPeriodDate);
-    nextPeriodDate.setDate(lastPeriodDate.getDate() + ((cyclesPassed + 1) * cycleLength));
-
-    const ovulationDate = new Date(nextPeriodDate);
-    ovulationDate.setDate(nextPeriodDate.getDate() - 14);
-
-    const fertileStart = new Date(ovulationDate);
-    fertileStart.setDate(ovulationDate.getDate() - 5);
-    const fertileEnd = new Date(ovulationDate);
-    fertileEnd.setDate(ovulationDate.getDate() + 1);
-
-    let phaseName = "";
-    let tip = "";
-
-    if (currentCycleDay <= 5) {
-        phaseName = "Fase Menstrual 🌧️";
-        tip = "🐶 *Snoopy dice:* Hoy toca descanso total en la casita. Una mantita y chocolates serán sus mejores aliados.";
-    } else if (currentCycleDay <= 13) {
-        phaseName = "Fase Folicular 🌱";
-        tip = "🐶 *Snoopy dice:* ¡La energía va subiendo como Woodstock volando! Ideal para salir a pasear juntos.";
-    } else if (currentCycleDay <= 17) {
-        phaseName = "Fase Ovulatoria ✨";
-        tip = "🐶 *Snoopy dice:* ¡Vitalidad al máximo! Aprovechen el buen humor para divertirse al aire libre.";
-    } else {
-        phaseName = "Fase Lútea 🍂";
-        tip = "🐶 *Snoopy dice:* Se encuentra cerca el momento de bajar el ritmo. Ten paciencia extra y apóyala con mimos.";
-    }
-
-    const options = { day: 'numeric', month: 'short' };
-
-    document.getElementById('currentDayNumber').innerText = `Día ${currentCycleDay}`;
-    document.getElementById('currentPhaseLabel').innerText = phaseName;
-    document.getElementById('predictionText').innerText = `Próximo periodo estimado en ${cycleLength - currentCycleDay} días.`;
-    
-    document.getElementById('nextPeriod').innerText = nextPeriodDate.toLocaleDateString('es-ES', options);
-    document.getElementById('fertileWindow').innerText = `${fertileStart.toLocaleDateString('es-ES', options)} al ${fertileEnd.toLocaleDateString('es-ES', options)}`;
-    document.getElementById('snoopyTip').innerHTML = tip;
-    document.getElementById('detailsSection').style.display = 'block';
-
-    renderCalendar();
-});
-
-// Guardar datos del modal utilizando las selecciones de las grillas
-document.getElementById('saveModalBtn').addEventListener('click', () => {
-    if (currentSelectedMethod) {
-        pillRecords[selectedDateString] = currentSelectedMethod;
-    } else {
-        delete pillRecords[selectedDateString];
-    }
-
-    if (currentSelectedSymptom) {
-        symptomRecords[selectedDateString] = currentSelectedSymptom;
-    } else {
-        delete symptomRecords[selectedDateString];
-    }
-
-    localStorage.setItem('snoopyPillRecords', JSON.stringify(pillRecords));
-    localStorage.setItem('snoopySymptomRecords', JSON.stringify(symptomRecords));
-
-    document.getElementById('dayModal').style.display = 'none';
-    renderWeeklyBar();
-    if (document.getElementById('calendarView').classList.contains('active-view')) {
-        renderCalendar();
-    }
-});
-
-document.getElementById('closeModalBtn').addEventListener('click', () => {
-    document.getElementById('dayModal').style.display = 'none';
-});
-
-// Renderizar Calendario Grande
 function renderCalendar() {
-    const calendarGrid = document.getElementById('calendarGrid');
-    calendarGrid.innerHTML = '';
+    const grid = document.getElementById('calendarGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
 
-    const startDateInput = document.getElementById('startDate').value;
-    const cycleLength = parseInt(document.getElementById('cycleLength').value) || 28;
-    let lastPeriodDate = startDateInput ? new Date(startDateInput) : new Date();
-    lastPeriodDate.setHours(0,0,0,0);
+    const year = currentDateCursor.getFullYear();
+    const month = currentDateCursor.getMonth();
 
-    const firstDayIndex = new Date(displayYear, displayMonth, 1).getDay();
-    const startingSpace = (firstDayIndex === 0) ? 6 : firstDayIndex - 1;
-    const totalDaysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const adjustedFirstDay = (firstDayIndex === 0) ? 6 : firstDayIndex - 1;
+    const totalDays = new Date(year, month + 1, 0).getDate();
 
-    for (let i = 0; i < startingSpace; i++) {
-        const emptyDiv = document.createElement('div');
-        calendarGrid.appendChild(emptyDiv);
+    for (let i = 0; i < adjustedFirstDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'cal-day opacity-25 bg-transparent border-0';
+        grid.appendChild(emptyCell);
     }
 
-    for (let day = 1; day <= totalDaysInMonth; day++) {
-        const currentDate = new Date(displayYear, displayMonth, day);
-        const dayDiv = document.createElement('div');
-        dayDiv.classList.add('cal-day');
+    const startDateObj = cycleData.startDate ? new Date(cycleData.startDate + 'T00:00:00') : null;
+    const cycleLen = cycleData.cycleLength;
+    const periodLen = cycleData.periodLength;
 
-        const dateString = `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    for (let day = 1; day <= totalDays; day++) {
+        const cellDate = new Date(year, month, day);
+        cellDate.setHours(0,0,0,0);
+        const dateStr = formatDateISO(cellDate);
 
-        dayDiv.addEventListener('click', () => {
-            openDayModal(dateString, day, displayMonth, displayYear);
-        });
+        const cell = document.createElement('div');
+        cell.className = 'cal-day';
 
-        const diffTime = currentDate - lastPeriodDate;
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        let badgeText = '';
+        let isPeriod = false;
+        let isOvulation = false;
 
-        if (diffDays >= 0) {
-            const cyclesPassed = Math.floor(diffDays / cycleLength);
-            const calculatedCycleStart = new Date(lastPeriodDate);
-            calculatedCycleStart.setDate(lastPeriodDate.getDate() + (cyclesPassed * cycleLength));
-            const dayOfThisCycle = Math.floor((currentDate - calculatedCycleStart) / (1000 * 60 * 60 * 24)) + 1;
+        if (startDateObj) {
+            const diffTime = cellDate - startDateObj;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays >= 0) {
+                let cDay = (diffDays % cycleLen) + 1;
+                badgeText = cDay;
+                
+                if (cDay <= periodLen) {
+                    isPeriod = true;
+                    cell.classList.add('period');
+                }
 
-            const badge = document.createElement('span');
-            badge.classList.add('cycle-day-badge');
-            badge.innerText = dayOfThisCycle;
-            dayDiv.appendChild(badge);
-
-            if (dayOfThisCycle >= 1 && dayOfThisCycle <= 5) {
-                dayDiv.classList.add('period');
-            } else {
-                const heart = document.createElement('span');
-                heart.classList.add('sub-indicator');
-                heart.innerText = '♥';
-                dayDiv.appendChild(heart);
+                // Mostrar ovulación SOLO SI el perfil indica que ovula
+                if (cycleData.ovulates && cDay === (cycleLen - 14)) {
+                    isOvulation = true;
+                }
             }
         }
 
-        const numSpan = document.createElement('span');
-        numSpan.classList.add('date-num');
-        numSpan.innerText = day;
-        dayDiv.appendChild(numSpan);
-
-        if (pillRecords[dateString]) {
-            const pillSpan = document.createElement('span');
-            pillSpan.classList.add('pill-indicator');
-            // Muestra el icono según el método guardado (pastilla, inyección o anillo)
-            let iconMap = { pill: '💊', injection: '💉', ring: '💍' };
-            pillSpan.innerText = iconMap[pillRecords[dateString]] || '💊';
-            dayDiv.appendChild(pillSpan);
+        const log = cycleData.logs[dateStr];
+        let indicatorsHtml = '';
+        if (log) {
+            if (log.methods && log.methods.length > 0) indicatorsHtml += '<span title="Método registrado">💊</span>';
+            if (log.symptoms && log.symptoms.length > 0) indicatorsHtml += '<span title="Síntoma registrado">✨</span>';
         }
 
-        if (symptomRecords[dateString]) {
-            const symptomSpan = document.createElement('span');
-            symptomSpan.classList.add('symptom-indicator');
-            let symptomIconMap = { cramps: '⚡', headache: '🤕', mood: '🌧️', energy: '✨', acne: '🌱' };
-            symptomSpan.innerText = symptomIconMap[symptomRecords[dateString]] || '✨';
-            symptomSpan.style.position = 'absolute';
-            symptomSpan.style.top = '2px';
-            symptomSpan.style.right = '4px';
-            symptomSpan.style.fontSize = '0.55rem';
-            dayDiv.appendChild(symptomSpan);
-        }
+        cell.innerHTML = `
+            ${badgeText ? `<span class="cycle-day-badge">D${badgeText}</span>` : ''}
+            <span class="date-num">${day}</span>
+            <div class="sub-indicator d-flex gap-1 align-items-center justify-content-center">
+                ${isOvulation ? '<span title="Día de ovulación estimado">🥚</span>' : ''}
+                ${indicatorsHtml}
+            </div>
+        `;
 
-        calendarGrid.appendChild(dayDiv);
+        cell.addEventListener('click', () => openDayModal(dateStr));
+        grid.appendChild(cell);
     }
 }
 
-// --- LÓGICA DE MODO OSCURO / CLARO ---
-const themeToggleBtn = document.getElementById('themeToggleBtn');
+// --- MODAL DE REGISTRO DIARIO ---
+function openDayModal(dateStr) {
+    selectedDateStrForModal = dateStr;
+    const titleElem = document.getElementById('modalDateTitle');
+    if (titleElem) titleElem.textContent = `Registro: ${formatDateReadable(new Date(dateStr + 'T00:00:00'))}`;
 
-// Cargar preferencia guardada previamente
-const savedTheme = localStorage.getItem('snoopy_theme');
-if (savedTheme === 'dark') {
-    document.body.classList.add('dark-mode');
-    if (themeToggleBtn) themeToggleBtn.textContent = '☀️';
+    document.querySelectorAll('.icon-option-btn').forEach(btn => btn.classList.remove('selected'));
+
+    const log = cycleData.logs[dateStr];
+    if (log) {
+        if (log.methods) {
+            log.methods.forEach(val => {
+                const btn = document.querySelector(`.icon-option-btn[data-type="method"][data-value="${val}"]`);
+                if (btn) btn.classList.add('selected');
+            });
+        }
+        if (log.symptoms) {
+            log.symptoms.forEach(val => {
+                const btn = document.querySelector(`.icon-option-btn[data-type="symptom"][data-value="${val}"]`);
+                if (btn) btn.classList.add('selected');
+            });
+        }
+    }
+
+    const dayModal = document.getElementById('dayModal');
+    if (dayModal) dayModal.style.display = 'flex';
 }
 
-if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        
-        if (document.body.classList.contains('dark-mode')) {
-            localStorage.setItem('snoopy_theme', 'dark');
-            themeToggleBtn.textContent = '☀️️';
-        } else {
-            localStorage.setItem('snoopy_theme', 'light');
-            themeToggleBtn.textContent = '🌙';
-        }
+function setupModalInteractions() {
+    document.querySelectorAll('.icon-option-btn').forEach(btn => {
+        btn.addEventListener('click', () => btn.classList.toggle('selected'));
     });
+
+    const closeBtn = document.getElementById('closeModalBtn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            document.getElementById('dayModal').style.display = 'none';
+        });
+    }
+
+    const saveBtn = document.getElementById('saveModalBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const methods = [];
+            const symptoms = [];
+
+            document.querySelectorAll('.icon-option-btn.selected').forEach(btn => {
+                const type = btn.getAttribute('data-type');
+                const val = btn.getAttribute('data-value');
+                if (type === 'method') methods.push(val);
+                if (type === 'symptom') symptoms.push(val);
+            });
+
+            if (!cycleData.logs) cycleData.logs = {};
+
+            if (methods.length > 0 || symptoms.length > 0) {
+                cycleData.logs[selectedDateStrForModal] = { methods, symptoms };
+            } else {
+                delete cycleData.logs[selectedDateStrForModal];
+            }
+
+            saveData();
+            document.getElementById('dayModal').style.display = 'none';
+
+            calculateCycle();
+            const calView = document.getElementById('calendarView');
+            if (calView && calView.classList.contains('active-view')) {
+                renderCalendar();
+            }
+
+            alert('¡Datos guardados con éxito! 🐾');
+        });
+    }
+}
+
+// --- MODO OSCURO / CLARO ---
+function initTheme() {
+    const savedTheme = localStorage.getItem('snoopy_theme');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        if (themeToggleBtn) themeToggleBtn.textContent = '☀️';
+    }
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('snoopy_theme', 'dark');
+                themeToggleBtn.textContent = '☀️️';
+            } else {
+                localStorage.setItem('snoopy_theme', 'light');
+                themeToggleBtn.textContent = '🌙';
+            }
+        });
+    }
+}
+
+// --- UTILIDADES ---
+function saveData() {
+    localStorage.setItem('snoopy_cycle_data', JSON.stringify(cycleData));
+}
+
+function formatDateISO(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function formatDateReadable(date) {
+    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
 }

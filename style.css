@@ -14,7 +14,6 @@
     --faq-bg: #f8f9fa;
 }
 
-/* MODO OSCURO */
 body.dark-mode {
     --primary-color: #ff6b6b;
     --primary-light: #4a2020;
@@ -59,10 +58,8 @@ body.bg-snoopy-app {
     color: var(--text-main) !important;
     border-radius: 20px !important;
     border: 1px solid var(--border-color) !important;
-    transition: background-color 0.3s, border-color 0.3s;
 }
 
-/* Inputs y Selects compatibles con modo oscuro */
 .form-control, .form-select {
     background-color: var(--input-bg) !important;
     color: var(--input-text) !important;
@@ -75,14 +72,13 @@ body.bg-snoopy-app {
     bottom: 15px;
     left: 50%;
     transform: translateX(-50%);
-    width: 90%;
-    max-width: 350px;
+    width: 95%;
+    max-width: 400px;
     z-index: 1000;
     box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
     border: 1px solid var(--border-color);
     background-color: var(--nav-bg) !important;
     backdrop-filter: blur(5px);
-    transition: background-color 0.3s, border-color 0.3s;
 }
 
 .nav-item-btn {
@@ -90,7 +86,7 @@ body.bg-snoopy-app {
     transition: all 0.2s;
     flex: 1;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .nav-item-btn.active {
@@ -101,14 +97,8 @@ body.bg-snoopy-app {
 .theme-toggle-btn {
     color: var(--text-main);
     cursor: pointer;
-    transition: transform 0.2s;
 }
 
-.theme-toggle-btn:hover {
-    transform: scale(1.1);
-}
-
-/* Para Computadoras (Pantallas mayores a 992px): Barra arriba centrada */
 @media (min-width: 992px) {
     body.bg-snoopy-app {
         padding-bottom: 20px;
@@ -129,7 +119,7 @@ body.bg-snoopy-app {
     }
 }
 
-/* Barra Semanal Dinámica */
+/* Barra Semanal */
 .weekly-bar-card {
     background: var(--card-bg) !important;
 }
@@ -149,7 +139,6 @@ body.bg-snoopy-app {
     flex-direction: column;
     align-items: center;
     cursor: pointer;
-    transition: all 0.2s;
 }
 
 .week-day-item.today {
@@ -210,12 +199,6 @@ body.bg-snoopy-app {
     border-left: 4px solid var(--accent-color);
 }
 
-.faq-item {
-    background-color: var(--faq-bg) !important;
-    border-color: var(--border-color) !important;
-    color: var(--text-main);
-}
-
 /* Calendario */
 .weekdays-grid {
     display: grid;
@@ -250,10 +233,6 @@ body.bg-snoopy-app {
     border-color: var(--primary-color);
 }
 
-.date-num {
-    z-index: 2;
-}
-
 .cycle-day-badge {
     position: absolute;
     top: 4px;
@@ -270,15 +249,7 @@ body.bg-snoopy-app {
     bottom: 4px;
 }
 
-.dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-
-.period-dot { background-color: var(--primary-color); }
-
-/* Modal y Grillas de Iconos */
+/* Modal */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -315,20 +286,9 @@ body.bg-snoopy-app {
     flex-direction: column;
     align-items: center;
     cursor: pointer;
-    transition: all 0.2s;
-}
-
-.icon-option-btn:hover {
-    border-color: var(--accent-color);
 }
 
 .icon-option-btn.selected {
     background-color: var(--primary-light);
     border-color: var(--primary-color);
-}
-
-.grid-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-main);
 }
