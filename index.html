@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snoopy Cycle 🐶</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="phone-frame">
+        <div class="app-container">
+
+            <!-- VISTA PRINCIPAL (INICIO) -->
+            <div id="homeView" class="view active-view">
+                <div class="flo-header">
+                    <span class="app-title">Snoopy Cycle 🐶</span>
+                    <button class="today-btn" id="goToTodayBtn">Hoy</button>
+                </div>
+
+                <!-- BARRA SEMANAL DINÁMICA -->
+                <div class="card weekly-bar-card">
+                    <div class="weekly-header">
+                        <span>Semana Actual</span>
+                    </div>
+                    <div class="week-days-container" id="weekDaysContainer">
+                        <!-- Inyectado por JavaScript -->
+                    </div>
+                </div>
+
+                <!-- BOTÓN RÁPIDO PARA REGISTRAR SÍNTOMAS -->
+                <button class="symptom-quick-btn" id="openSymptomModalBtn">
+                    ✨ Registrar Síntomas y Estado de hoy
+                </button>
+
+                <!-- Tarjeta del Ciclo Actual -->
+                <div class="card cycle-hero-card">
+                    <div class="cycle-ring-container">
+                        <div class="cycle-ring">
+                            <span class="day-number" id="currentDayNumber">Día 1</span>
+                            <span class="phase-label" id="currentPhaseLabel">Fase Menstrual</span>
+                        </div>
+                    </div>
+                    <p class="prediction-text" id="predictionText">Calculando tu ciclo...</p>
+                </div>
+
+                <!-- Configuración del Ciclo -->
+                <div class="card config-card">
+                    <h3>Configuración del Ciclo</h3>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="startDate">Última regla</label>
+                            <input type="date" id="startDate">
+                        </div>
+                        <div class="input-group">
+                            <label for="cycleLength">Días del ciclo</label>
+                            <input type="number" id="cycleLength" value="28" min="20" max="45">
+                        </div>
+                    </div>
+                    <button id="calculateBtn">Guardar y Calcular</button>
+                </div>
+
+                <!-- Detalles y Consejos de Snoopy -->
+                <div class="card info-card" id="detailsSection" style="display: none;">
+                    <h3>Información del Ciclo</h3>
+                    <div class="info-row">
+                        <span>Próximo periodo:</span>
+                        <strong id="nextPeriod">-</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Ventana fértil:</span>
+                        <strong id="fertileWindow">-</strong>
+                    </div>
+                    <div class="snoopy-tip" id="snoopyTip">
+                        🐶 *Snoopy dice:* Configura tus datos para recibir consejitos especiales.
+                    </div>
+                </div>
+
+                <!-- Guía rápida / Trivias -->
+                <div class="card trivia-card">
+                    <h3>Guía de Snoopy 🐾</h3>
+                    <div class="faq-list">
+                        <details class="faq-item">
+                            <summary>¿Qué pasa en la Fase Menstrual?</summary>
+                            <p>Es el inicio de tu ciclo. Snoopy recomienda descanso, una mantita abrigada y chocolates para consentirte.</p>
+                        </details>
+                        <details class="faq-item">
+                            <summary>¿Cómo funciona la ventana fértil?</summary>
+                            <p>Son los días aproximados de mayor energía y vitalidad según tu ovulación. ¡Ideal para pasear con Woodstock!</p>
+                        </details>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA CALENDARIO -->
+            <div id="calendarView" class="view">
+                <div class="flo-header">
+                    <span class="app-title">Calendario de Ciclo 📅</span>
+                </div>
+
+                <div class="calendar-nav-header">
+                    <div class="selectors-container">
+                        <select id="monthSelect" class="cal-select"></select>
+                        <select id="yearSelect" class="cal-select"></select>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="nav-arrow-btn" id="prevMonthBtn">&lt;</button>
+                        <button class="nav-arrow-btn" id="nextMonthBtn">&gt;</button>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 15px;">
+                    <div class="weekdays-grid">
+                        <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Inyectado por JavaScript -->
+                    </div>
+                </div>
+
+                <div class="calendar-legend">
+                    <div class="legend-item"><span class="dot period-dot"></span> Periodo</div>
+                    <div class="legend-item">💊 Método</div>
+                    <div class="legend-item">✨ Síntoma</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-target="homeView">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Inicio</span>
+            </button>
+            <button class="nav-item" data-target="calendarView">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">Calendario</span>
+            </button>
+        </nav>
+
+        <!-- MODAL EMERGENTE CON GRILLAS DE ICONOS -->
+        <div class="modal-overlay" id="dayModal" style="display: none;">
+            <div class="modal-card">
+                <h3 id="modalDateTitle">Registro del Día</h3>
+                
+                <!-- Sección Método Anticonceptivo en Grilla -->
+                <div class="modal-section-title">Método Anticonceptivo</div>
+                <div class="icon-grid" id="methodGrid">
+                    <button type="button" class="icon-option-btn" data-type="method" data-value="pill">
+                        <span class="grid-icon">💊</span>
+                        <span class="grid-label">Pastilla</span>
+                    </button>
+                    <button type="button" class="icon-option-btn" data-type="method" data-value="injection">
+                        <span class="grid-icon">💉</span>
+                        <span class="grid-label">Inyección</span>
+                    </button>
+                    <button type="button" class="icon-option-btn" data-type="method" data-value="ring">
+                        <span class="grid-icon">💍</span>
+                        <span class="grid-label">Anillo</span>
+                    </button>
+                </div>
+
+                <!-- Sección Síntomas y Ánimo en Grilla -->
+                <div class="modal-section-title">Síntomas / Ánimo</div>
+                <div class="icon-grid" id="symptomGrid">
+                    <button type="button" class="icon-option-btn" data-type="symptom" data-value="cramps">
+                        <span class="grid-icon">⚡</span>
+                        <span class="grid-label">Cólicos</span>
+                    </button>
+                    <button type="button" class="icon-option-btn" data-type="symptom" data-value="headache">
+                        <span class="grid-icon">🤕</span>
+                        <span class="grid-label">Cabeza</span>
+                    </button>
+                    <button type="button" class="icon-option-btn" data-type="symptom" data-value="mood">
+                        <span class="grid-icon">🌧️</span>
+                        <span class="grid-label">Sensible</span>
+                    </button>
+                    <button type="button" class="icon-option-btn" data-type="symptom" data-value="energy">
+                        <span class="grid-icon">✨</span>
+                        <span class="grid-label">Energía</span>
+                    </button>
+                    <button type="button" class="icon-option-btn" data-type="symptom" data-value="acne">
+                        <span class="grid-icon">🌱</span>
+                        <span class="grid-label">Brote</span>
+                    </button>
+                </div>
+
+                <div class="modal-buttons">
+                    <button class="modal-btn-save" id="saveModalBtn">Guardar</button>
+                    <button class="modal-btn-cancel" id="closeModalBtn">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
