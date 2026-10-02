@@ -435,3 +435,27 @@ function renderCalendar() {
         calendarGrid.appendChild(dayDiv);
     }
 }
+
+// --- LÓGICA DE MODO OSCURO / CLARO ---
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+
+// Cargar preferencia guardada previamente
+const savedTheme = localStorage.getItem('snoopy_theme');
+if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    if (themeToggleBtn) themeToggleBtn.textContent = '☀️';
+}
+
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('snoopy_theme', 'dark');
+            themeToggleBtn.textContent = '☀️️';
+        } else {
+            localStorage.setItem('snoopy_theme', 'light');
+            themeToggleBtn.textContent = '🌙';
+        }
+    });
+}

@@ -13,141 +13,160 @@
 </head>
 <body class="bg-snoopy-app">
 
-    <!-- CONTENEDOR PRINCIPAL FLUIDO (Responsivo PC y Móvil) -->
-    <div class="container py-3 py-md-4 max-w-app">
-        <div class="app-container">
+    <!-- CONTENEDOR PRINCIPAL FLUIDO -->
+    <div class="container py-4 main-app-wrapper">
+        <div class="app-container mx-auto">
+
+            <!-- BARRA DE NAVEGACIÓN (Arriba en PC, Abajo fija en Celular) -->
+            <nav class="app-nav-bar shadow-sm p-2 rounded-pill mx-auto mb-4 d-flex align-items-center justify-content-between">
+                <div class="d-flex gap-1 flex-grow-1">
+                    <button class="nav-item-btn active border-0 bg-transparent px-3 py-2 rounded-pill fw-bold" data-target="homeView">
+                        🏠 Inicio
+                    </button>
+                    <button class="nav-item-btn border-0 bg-transparent px-3 py-2 rounded-pill fw-bold" data-target="calendarView">
+                        📅 Calendario
+                    </button>
+                </div>
+                <!-- Botón de Modo Oscuro / Claro -->
+                <button id="themeToggleBtn" class="theme-toggle-btn border-0 bg-transparent px-3 py-2 rounded-pill fw-bold" title="Cambiar modo claro/oscuro">
+                    🌙
+                </button>
+            </nav>
 
             <!-- VISTA PRINCIPAL (INICIO) -->
             <div id="homeView" class="view active-view">
                 
                 <!-- Header -->
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="app-title fs-4 fw-bold">Snoopy Cycle 🐶</span>
-                    <button class="btn btn-warning btn-sm fw-bold px-3 shadow-sm" id="goToTodayBtn">Hoy</button>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="app-title fs-3 fw-bold text-danger">Snoopy Cycle 🐶</span>
+                    <button class="btn btn-warning btn-sm fw-bold px-4 shadow-sm rounded-pill" id="goToTodayBtn">Hoy</button>
                 </div>
 
-                <!-- BARRA SEMANAL DINÁMICA -->
-                <div class="card weekly-bar-card shadow-sm border-0 mb-3">
-                    <div class="weekly-header text-muted fw-bold text-center mb-2">Semana Actual</div>
-                    <div class="week-days-container" id="weekDaysContainer">
-                        <!-- Inyectado por JavaScript -->
+                <!-- EN PC SE ORGANIZA EN DOS COLUMNAS, EN MÓVIL EN UNA SOLA -->
+                <div class="row g-4">
+                    
+                    <!-- Columna Izquierda: Resumen y Ciclo -->
+                    <div class="col-12 col-lg-6">
+                        <!-- Tarjeta del Ciclo Actual -->
+                        <div class="card cycle-hero-card shadow-sm border-0 mb-4 text-center p-4">
+                            <div class="cycle-ring-container d-flex justify-content-center mb-3">
+                                <div class="cycle-ring">
+                                    <span class="day-number" id="currentDayNumber">Día 1</span>
+                                    <span class="phase-label" id="currentPhaseLabel">Fase Menstrual</span>
+                                </div>
+                            </div>
+                            <p class="prediction-text text-muted fw-semibold mb-0" id="predictionText">Calculando tu ciclo...</p>
+                        </div>
+
+                        <!-- BOTÓN RÁPIDO PARA REGISTRAR SÍNTOMAS -->
+                        <button class="btn btn-danger w-100 fw-bold py-3 mb-4 shadow symptom-quick-btn rounded-4" id="openSymptomModalBtn">
+                            ✨ Registrar Síntomas y Estado de hoy
+                        </button>
                     </div>
-                </div>
 
-                <!-- BOTÓN RÁPIDO PARA REGISTRAR SÍNTOMAS -->
-                <button class="btn btn-danger w-100 fw-bold py-3 mb-3 shadow symptom-quick-btn" id="openSymptomModalBtn">
-                    ✨ Registrar Síntomas y Estado de hoy
-                </button>
+                    <!-- Columna Derecha: Barra Semanal, Configuración y Consejos -->
+                    <div class="col-12 col-lg-6">
+                        <!-- BARRA SEMANAL DINÁMICA -->
+                        <div class="card weekly-bar-card shadow-sm border-0 mb-4 p-3">
+                            <div class="weekly-header text-muted fw-bold text-center mb-2">Semana Actual</div>
+                            <div class="week-days-container" id="weekDaysContainer">
+                                <!-- Inyectado por JavaScript -->
+                            </div>
+                        </div>
 
-                <!-- Tarjeta del Ciclo Actual -->
-                <div class="card cycle-hero-card shadow-sm border-0 mb-3 text-center p-4">
-                    <div class="cycle-ring-container d-flex justify-content-center mb-3">
-                        <div class="cycle-ring">
-                            <span class="day-number" id="currentDayNumber">Día 1</span>
-                            <span class="phase-label" id="currentPhaseLabel">Fase Menstrual</span>
+                        <!-- Configuración del Ciclo -->
+                        <div class="card config-card shadow-sm border-0 mb-4 p-4">
+                            <h3 class="fs-6 fw-bold mb-3">Configuración del Ciclo</h3>
+                            <div class="row g-3 mb-3">
+                                <div class="col-7">
+                                    <label for="startDate" class="form-label small fw-semibold text-muted">Última regla</label>
+                                    <input type="date" id="startDate" class="form-control">
+                                </div>
+                                <div class="col-5">
+                                    <label for="cycleLength" class="form-label small fw-semibold text-muted">Días ciclo</label>
+                                    <input type="number" id="cycleLength" value="28" min="20" max="45" class="form-control">
+                                </div>
+                            </div>
+                            <button id="calculateBtn" class="btn btn-warning w-100 fw-bold shadow-sm">Guardar y Calcular</button>
+                        </div>
+
+                        <!-- Detalles y Consejos de Snoopy -->
+                        <div class="card info-card shadow-sm border-0 mb-4 p-4" id="detailsSection" style="display: none;">
+                            <h3 class="fs-6 fw-bold mb-2">Información del Ciclo</h3>
+                            <div class="d-flex justify-content-between small text-muted mb-2">
+                                <span>Próximo periodo:</span>
+                                <strong id="nextPeriod" class="text-dark">-</strong>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted mb-3">
+                                <span>Ventana fértil:</span>
+                                <strong id="fertileWindow" class="text-dark">-</strong>
+                            </div>
+                            <div class="snoopy-tip p-3 rounded-3" id="snoopyTip">
+                                🐶 *Snoopy dice:* Configura tus datos para recibir consejitos especiales.
+                            </div>
+                        </div>
+
+                        <!-- Guía rápida / Trivias -->
+                        <div class="card trivia-card shadow-sm border-0 mb-4 p-4">
+                            <h3 class="fs-6 fw-bold mb-2">Guía de Snoopy 🐾</h3>
+                            <div class="accordion accordion-flush" id="snoopyAccordion">
+                                <details class="faq-item p-2 mb-2 rounded border">
+                                    <summary class="fw-semibold small">¿Qué pasa en la Fase Menstrual?</summary>
+                                    <p class="small text-muted mt-2 mb-0">Es el inicio de tu ciclo. Snoopy recomienda descanso, una mantita abrigada y chocolates para consentirte.</p>
+                                </details>
+                                <details class="faq-item p-2 rounded border">
+                                    <summary class="fw-semibold small">¿Cómo funciona la ventana fértil?</summary>
+                                    <p class="small text-muted mt-2 mb-0">Son los días aproximados de mayor energía y vitalidad según tu ovulación. ¡Ideal para pasear con Woodstock!</p>
+                                </details>
+                            </div>
                         </div>
                     </div>
-                    <p class="prediction-text text-muted fw-semibold mb-0" id="predictionText">Calculando tu ciclo...</p>
-                </div>
 
-                <!-- Configuración del Ciclo -->
-                <div class="card config-card shadow-sm border-0 mb-3 p-3">
-                    <h3 class="fs-6 fw-bold mb-3">Configuración del Ciclo</h3>
-                    <div class="row g-2 mb-3">
-                        <div class="col-7">
-                            <label for="startDate" class="form-label small fw-semibold text-muted">Última regla</label>
-                            <input type="date" id="startDate" class="form-control form-control-sm">
-                        </div>
-                        <div class="col-5">
-                            <label for="cycleLength" class="form-label small fw-semibold text-muted">Días ciclo</label>
-                            <input type="number" id="cycleLength" value="28" min="20" max="45" class="form-control form-control-sm">
-                        </div>
-                    </div>
-                    <button id="calculateBtn" class="btn btn-warning w-100 fw-bold shadow-sm">Guardar y Calcular</button>
-                </div>
-
-                <!-- Detalles y Consejos de Snoopy -->
-                <div class="card info-card shadow-sm border-0 mb-3 p-3" id="detailsSection" style="display: none;">
-                    <h3 class="fs-6 fw-bold mb-2">Información del Ciclo</h3>
-                    <div class="d-flex justify-content-between small text-muted mb-2">
-                        <span>Próximo periodo:</span>
-                        <strong id="nextPeriod" class="text-dark">-</strong>
-                    </div>
-                    <div class="d-flex justify-content-between small text-muted mb-3">
-                        <span>Ventana fértil:</span>
-                        <strong id="fertileWindow" class="text-dark">-</strong>
-                    </div>
-                    <div class="snoopy-tip p-3 rounded-3" id="snoopyTip">
-                        🐶 *Snoopy dice:* Configura tus datos para recibir consejitos especiales.
-                    </div>
-                </div>
-
-                <!-- Guía rápida / Trivias -->
-                <div class="card trivia-card shadow-sm border-0 mb-4 p-3">
-                    <h3 class="fs-6 fw-bold mb-2">Guía de Snoopy 🐾</h3>
-                    <div class="accordion accordion-flush" id="snoopyAccordion">
-                        <details class="faq-item p-2 mb-2 rounded bg-light border">
-                            <summary class="fw-semibold small">¿Qué pasa en la Fase Menstrual?</summary>
-                            <p class="small text-muted mt-2 mb-0">Es el inicio de tu ciclo. Snoopy recomienda descanso, una mantita abrigada y chocolates para consentirte.</p>
-                        </details>
-                        <details class="faq-item p-2 rounded bg-light border">
-                            <summary class="fw-semibold small">¿Cómo funciona la ventana fértil?</summary>
-                            <p class="small text-muted mt-2 mb-0">Son los días aproximados de mayor energía y vitalidad según tu ovulación. ¡Ideal para pasear con Woodstock!</p>
-                        </details>
-                    </div>
                 </div>
             </div>
 
             <!-- VISTA CALENDARIO -->
             <div id="calendarView" class="view">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="app-title fs-4 fw-bold">Calendario de Ciclo 📅</span>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="app-title fs-3 fw-bold text-danger">Calendario de Ciclo 📅</span>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="d-flex gap-2">
-                        <select id="monthSelect" class="form-select form-select-sm fw-semibold"></select>
-                        <select id="yearSelect" class="form-select form-select-sm fw-semibold"></select>
-                    </div>
-                    <div class="btn-group shadow-sm" role="group">
-                        <button class="btn btn-outline-secondary btn-sm px-3 fw-bold" id="prevMonthBtn">&lt;</button>
-                        <button class="btn btn-outline-secondary btn-sm px-3 fw-bold" id="nextMonthBtn">&gt;</button>
-                    </div>
-                </div>
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-8">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex gap-2">
+                                <select id="monthSelect" class="form-select fw-semibold"></select>
+                                <select id="yearSelect" class="form-select fw-semibold"></select>
+                            </div>
+                            <div class="btn-group shadow-sm" role="group">
+                                <button class="btn btn-outline-secondary px-4 fw-bold" id="prevMonthBtn">&lt;</button>
+                                <button class="btn btn-outline-secondary px-4 fw-bold" id="nextMonthBtn">&gt;</button>
+                            </div>
+                        </div>
 
-                <div class="card shadow-sm border-0 p-3 mb-3">
-                    <div class="weekdays-grid text-muted fw-bold small text-center mb-2">
-                        <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
-                    </div>
-                    <div class="calendar-grid" id="calendarGrid">
-                        <!-- Inyectado por JavaScript -->
-                    </div>
-                </div>
+                        <div class="card shadow-sm border-0 p-4 mb-3">
+                            <div class="weekdays-grid text-muted fw-bold small text-center mb-3">
+                                <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+                            </div>
+                            <div class="calendar-grid" id="calendarGrid">
+                                <!-- Inyectado por JavaScript -->
+                            </div>
+                        </div>
 
-                <div class="calendar-legend d-flex justify-content-around small text-muted p-2 rounded shadow-sm bg-white border mb-4">
-                    <div class="legend-item d-flex align-items-center gap-1"><span class="dot period-dot"></span> Periodo</div>
-                    <div class="legend-item d-flex align-items-center gap-1">💊 Método</div>
-                    <div class="legend-item d-flex align-items-center gap-1">✨ Síntoma</div>
+                        <div class="calendar-legend d-flex justify-content-around small text-muted p-3 rounded shadow-sm border mb-4">
+                            <div class="legend-item d-flex align-items-center gap-2"><span class="dot period-dot"></span> Periodo</div>
+                            <div class="legend-item d-flex align-items-center gap-2">💊 Método</div>
+                            <div class="legend-item d-flex align-items-center gap-2">✨ Síntoma</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
         </div>
 
-        <!-- BARRA DE NAVEGACIÓN INFERIOR (Responsiva fija flotante tipo App) -->
-        <nav class="bottom-nav shadow-lg">
-            <button class="nav-item active border-0 bg-transparent" data-target="homeView">
-                <span class="nav-icon fs-5">🏠</span>
-                <span class="nav-label">Inicio</span>
-            </button>
-            <button class="nav-item border-0 bg-transparent" data-target="calendarView">
-                <span class="nav-icon fs-5">📅</span>
-                <span class="nav-label">Calendario</span>
-            </button>
-        </nav>
-
         <!-- MODAL EMERGENTE CON GRILLAS DE ICONOS -->
         <div class="modal-overlay" id="dayModal" style="display: none;">
-            <div class="modal-card shadow-lg bg-white p-4 rounded-4">
+            <div class="modal-card shadow-lg p-4 rounded-4">
                 <h3 id="modalDateTitle" class="fs-5 fw-bold text-center mb-3">Registro del Día</h3>
                 
                 <!-- Sección Método Anticonceptivo en Grilla -->
@@ -194,7 +213,7 @@
 
                 <div class="modal-buttons d-flex gap-2">
                     <button class="modal-btn-save btn btn-warning fw-bold flex-grow-1" id="saveModalBtn">Guardar</button>
-                    <button class="modal-btn-cancel btn btn-light fw-semibold flex-grow-1 border" id="closeModalBtn">Cancelar</button>
+                    <button class="modal-btn-cancel btn btn-outline-secondary fw-semibold flex-grow-1" id="closeModalBtn">Cancelar</button>
                 </div>
             </div>
         </div>
