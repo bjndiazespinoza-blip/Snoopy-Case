@@ -14,18 +14,12 @@ body.bg-snoopy-app {
     font-family: 'Quicksand', sans-serif;
     color: var(--text-main);
     min-height: 100vh;
+    padding-bottom: 70px; /* Espacio extra abajo en móviles para que la barra fija no tape contenido */
 }
 
-/* Ancho máximo adaptable: se ve como app en celulares, y como un panel elegante y centrado en computadores */
-.max-w-app {
-    max-width: 480px;
+.main-app-wrapper {
+    max-width: 1100px;
     margin: 0 auto;
-    position: relative;
-    padding-bottom: 90px;
-}
-
-.app-container {
-    position: relative;
 }
 
 .view {
@@ -36,11 +30,65 @@ body.bg-snoopy-app {
     display: block;
 }
 
-/* Tarjetas y componentes generales estilizados con la paleta Snoopy */
+/* Tarjetas y componentes generales */
 .card {
     background-color: var(--card-bg);
     border-radius: 20px !important;
     border: 1px solid var(--border-color) !important;
+}
+
+/* --- COMPORTAMIENTO ADAPTATIVO DE LA BARRA DE NAVEGACIÓN --- */
+
+/* Por defecto (Celulares y pantallas chicas): Barra fija inferior flotante */
+.app-nav-bar {
+    position: fixed;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 320px;
+    display: flex;
+    justify-content: space-around;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(5px);
+}
+
+.nav-item-btn {
+    color: var(--text-muted);
+    transition: all 0.2s;
+    flex: 1;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.nav-item-btn.active {
+    background-color: var(--primary-light) !important;
+    color: var(--primary-color);
+}
+
+/* Para Computadoras y tablets grandes (Pantallas mayores a 992px): Barra arriba centrada */
+@media (min-width: 992px) {
+    body.bg-snoopy-app {
+        padding-bottom: 20px; /* Quitamos el espacio extra inferior de móvil */
+    }
+
+    .app-nav-bar {
+        position: static !important;
+        transform: none !important;
+        width: fit-content !important;
+        margin-bottom: 2rem !important;
+        box-shadow: var(--bs-box-shadow-sm) !important;
+        background-color: var(--card-bg) !important;
+    }
+
+    .nav-item-btn {
+        flex: unset;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
 }
 
 /* Barra Semanal Dinámica */
@@ -51,14 +99,14 @@ body.bg-snoopy-app {
 .week-days-container {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+    gap: 8px;
 }
 
 .week-day-item {
     background: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 8px 2px;
+    padding: 10px 4px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -72,25 +120,17 @@ body.bg-snoopy-app {
 }
 
 .week-day-name {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
 }
 
 .week-day-num {
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--text-main);
-    margin: 2px 0;
-}
-
-.week-day-indicators {
-    display: flex;
-    gap: 2px;
-    font-size: 0.55rem;
-    height: 12px;
-    align-items: center;
+    margin: 4px 0;
 }
 
 /* Círculo del Ciclo */
@@ -99,10 +139,10 @@ body.bg-snoopy-app {
 }
 
 .cycle-ring {
-    width: 130px;
-    height: 130px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
-    border: 6px solid var(--primary-light);
+    border: 8px solid var(--primary-light);
     border-top-color: var(--primary-color);
     display: flex;
     flex-direction: column;
@@ -111,13 +151,13 @@ body.bg-snoopy-app {
 }
 
 .day-number {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary-color);
 }
 
 .phase-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     font-weight: 600;
     margin-top: 4px;
@@ -128,7 +168,7 @@ body.bg-snoopy-app {
 .snoopy-tip {
     background-color: #fff8e1;
     color: #5d4037;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     border-left: 4px solid var(--accent-color);
 }
 
@@ -141,19 +181,19 @@ body.bg-snoopy-app {
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+    gap: 8px;
 }
 
 .cal-day {
     aspect-ratio: 1;
     background: var(--bg-color);
-    border-radius: 10px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     position: relative;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 600;
     border: 1px solid transparent;
     cursor: pointer;
@@ -170,26 +210,18 @@ body.bg-snoopy-app {
 
 .cycle-day-badge {
     position: absolute;
-    top: 2px;
-    left: 4px;
-    font-size: 0.55rem;
+    top: 4px;
+    left: 6px;
+    font-size: 0.6rem;
     color: var(--text-muted);
     font-weight: 700;
 }
 
 .sub-indicator {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     color: var(--primary-color);
     position: absolute;
-    bottom: 2px;
-}
-
-.cal-day .pill-indicator {
-    font-size: 0.6rem;
-    position: absolute;
-    bottom: 3px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 4px;
 }
 
 .dot {
@@ -216,21 +248,21 @@ body.bg-snoopy-app {
 
 .modal-card {
     width: 90%;
-    max-width: 360px;
+    max-width: 380px;
     border: 2px solid #ffe082 !important;
 }
 
 .icon-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: 10px;
 }
 
 .icon-option-btn {
     background: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 8px 4px;
+    padding: 10px 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -248,45 +280,7 @@ body.bg-snoopy-app {
 }
 
 .grid-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-main);
-}
-
-/* Barra de Navegación Inferior Flotante */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 480px;
-    height: 65px;
-    background-color: var(--card-bg);
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 1000;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-}
-
-.nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-family: 'Quicksand', sans-serif;
-    width: 50%;
-}
-
-.nav-item.active {
-    color: var(--primary-color);
-}
-
-.nav-label {
-    font-size: 0.7rem;
-    font-weight: 700;
 }
