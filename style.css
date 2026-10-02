@@ -9,104 +9,43 @@
     --border-color: #f0e6d2;
 }
 
-body {
-    background-color: #f0f2f5;
+body.bg-snoopy-app {
+    background-color: #f5f7fa;
     font-family: 'Quicksand', sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
     color: var(--text-main);
+    min-height: 100vh;
 }
 
-.phone-frame {
-    width: 100%;
-    max-width: 400px;
-    height: 100vh;
-    max-height: 800px;
-    background-color: var(--bg-color);
-    border-radius: 40px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+/* Ancho máximo adaptable: se ve como app en celulares, y como un panel elegante y centrado en computadores */
+.max-w-app {
+    max-width: 480px;
+    margin: 0 auto;
     position: relative;
-    border: 8px solid #333;
+    padding-bottom: 90px;
 }
 
 .app-container {
-    flex: 1;
-    overflow-y: auto;
     position: relative;
-    padding-bottom: 70px;
-}
-
-.app-container::-webkit-scrollbar {
-    display: none;
-}
-.app-container {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
 }
 
 .view {
     display: none;
-    padding: 20px;
-    box-sizing: border-box;
 }
 
 .view.active-view {
     display: block;
 }
 
-/* Header General */
-.flo-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.app-title {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-.today-btn {
-    background: var(--accent-color);
-    border: none;
-    padding: 5px 12px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 0.8rem;
-    cursor: pointer;
-}
-
-/* Tarjetas */
+/* Tarjetas y componentes generales estilizados con la paleta Snoopy */
 .card {
     background-color: var(--card-bg);
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-    border: 1px solid var(--border-color);
+    border-radius: 20px !important;
+    border: 1px solid var(--border-color) !important;
 }
 
 /* Barra Semanal Dinámica */
 .weekly-bar-card {
-    padding: 12px 15px;
-    background: linear-gradient(135deg, #ffffff 0%, #fffdf9 100%);
-}
-
-.weekly-header {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-    text-align: center;
+    background: linear-gradient(135deg, #ffffff 0%, #fffdf9 100%) !important;
 }
 
 .week-days-container {
@@ -154,34 +93,9 @@ body {
     align-items: center;
 }
 
-/* Botón rápido de síntomas */
-.symptom-quick-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #ff8a80 0%, #ff5252 100%);
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 16px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    cursor: pointer;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3);
-    text-align: center;
-    font-family: 'Quicksand', sans-serif;
-}
-
-/* Vista Inicio: Hero Card */
+/* Círculo del Ciclo */
 .cycle-hero-card {
-    text-align: center;
-    background: linear-gradient(135deg, #fff5f5 0%, #fffdf9 100%);
-}
-
-.cycle-ring-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 15px;
+    background: linear-gradient(135deg, #fff5f5 0%, #fffdf9 100%) !important;
 }
 
 .cycle-ring {
@@ -211,167 +125,17 @@ body {
     padding: 0 10px;
 }
 
-.prediction-text {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    font-weight: 600;
-    margin: 0;
-}
-
-/* Configuración */
-.config-card h3 {
-    margin-top: 0;
-    font-size: 1rem;
-    margin-bottom: 12px;
-}
-
-.input-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.input-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.input-group label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-muted);
-}
-
-.input-group input {
-    padding: 8px 10px;
-    border-radius: 10px;
-    border: 1px solid var(--border-color);
-    font-family: 'Quicksand', sans-serif;
-    font-size: 0.9rem;
-    background: var(--bg-color);
-}
-
-#calculateBtn {
-    width: 100%;
-    background-color: var(--accent-color);
-    color: #1a1a1a;
-    border: none;
-    padding: 10px;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-/* Info card */
-.info-card h3 {
-    margin-top: 0;
-    font-size: 1rem;
-    margin-bottom: 10px;
-}
-
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    margin-bottom: 8px;
-    color: var(--text-muted);
-}
-
-.info-row strong {
-    color: var(--text-main);
-}
-
 .snoopy-tip {
-    margin-top: 12px;
     background-color: #fff8e1;
-    padding: 10px 12px;
-    border-radius: 12px;
-    font-size: 0.85rem;
     color: #5d4037;
+    font-size: 0.85rem;
     border-left: 4px solid var(--accent-color);
 }
 
-/* Trivias */
-.trivia-card h3 {
-    margin-top: 0;
-    font-size: 1rem;
-    margin-bottom: 10px;
-}
-
-.faq-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.faq-item {
-    background: var(--bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 0.85rem;
-}
-
-.faq-item summary {
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--text-main);
-}
-
-.faq-item p {
-    margin: 8px 0 0 0;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    line-height: 1.4;
-}
-
-/* Vista Calendario */
-.calendar-nav-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.selectors-container {
-    display: flex;
-    gap: 8px;
-}
-
-.cal-select {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    padding: 6px 10px;
-    border-radius: 10px;
-    font-family: 'Quicksand', sans-serif;
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-.nav-arrow-btn {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-weight: bold;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
+/* Calendario */
 .weekdays-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-bottom: 10px;
 }
 
 .calendar-grid {
@@ -426,25 +190,6 @@ body {
     bottom: 3px;
     left: 50%;
     transform: translateX(-50%);
-    margin-top: 4px;
-}
-
-.calendar-legend {
-    display: flex;
-    justify-content: space-around;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    margin-top: 15px;
-    background: var(--card-bg);
-    padding: 10px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
 }
 
 .dot {
@@ -457,7 +202,7 @@ body {
 
 /* Modal y Grillas de Iconos */
 .modal-overlay {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
@@ -466,41 +211,19 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 200;
+    z-index: 1050;
 }
 
 .modal-card {
-    background: #ffffff;
     width: 90%;
-    max-width: 340px;
-    padding: 20px;
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    border: 2px solid #ffe082;
-    box-sizing: border-box;
-}
-
-.modal-card h3 {
-    margin-top: 0;
-    font-size: 1.1rem;
-    color: #333;
-    margin-bottom: 12px;
-    text-align: center;
-}
-
-.modal-section-title {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-    margin-top: 10px;
+    max-width: 360px;
+    border: 2px solid #ffe082 !important;
 }
 
 .icon-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    margin-bottom: 10px;
 }
 
 .icon-option-btn {
@@ -519,15 +242,9 @@ body {
     border-color: var(--accent-color);
 }
 
-/* Estilo cuando el icono está seleccionado */
 .icon-option-btn.selected {
     background-color: var(--primary-light);
     border-color: var(--primary-color);
-}
-
-.grid-icon {
-    font-size: 1.2rem;
-    margin-bottom: 2px;
 }
 
 .grid-label {
@@ -536,54 +253,26 @@ body {
     color: var(--text-main);
 }
 
-.modal-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.modal-btn-save {
-    flex: 1;
-    background-color: var(--accent-color);
-    color: #1a1a1a;
-    border: none;
-    padding: 10px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    cursor: pointer;
-}
-
-.modal-btn-cancel {
-    flex: 1;
-    background-color: #f0e6d2;
-    color: #555;
-    border: none;
-    padding: 10px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-}
-
-/* Barra de Navegación Inferior */
+/* Barra de Navegación Inferior Flotante */
 .bottom-nav {
-    position: absolute;
+    position: fixed;
     bottom: 0;
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
+    max-width: 480px;
     height: 65px;
     background-color: var(--card-bg);
     border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    z-index: 100;
+    z-index: 1000;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
 }
 
 .nav-item {
-    background: none;
-    border: none;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -595,11 +284,6 @@ body {
 
 .nav-item.active {
     color: var(--primary-color);
-}
-
-.nav-icon {
-    font-size: 1.2rem;
-    margin-bottom: 2px;
 }
 
 .nav-label {
